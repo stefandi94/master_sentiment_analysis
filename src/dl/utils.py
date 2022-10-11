@@ -19,7 +19,7 @@ def collate_batch(batch):
     label_list = torch.tensor(label_list, dtype=torch.int64)
     text_list = pad_sequence(text_list, batch_first=True, padding_value=0)
 
-    return text_list, label_list,
+    return text_list, label_list
 
 
 def calc_metrics(y_true, y_pred):

@@ -16,7 +16,7 @@ from src.dl.utils import get_model
 
 class BaseTrainer(ABC):
 
-    def __init__(self, model_name, lr, epochs, batch_size, device, classes, log_dir, optimizer_name, **model_kwargs):
+    def __init__(self, model_name, lr, epochs, batch_size, device, classes, optimizer_name, output_dir, log_dir, **model_kwargs):
         self.vocab = None
         self.model_name = model_name
         self.model = get_model(model_name, **model_kwargs).to(device)
@@ -29,6 +29,7 @@ class BaseTrainer(ABC):
         self.device = device
         self.epochs = epochs
         self.log_dir = log_dir
+        self.output_dir = output_dir
         self.writer = self.init_tensorboard_writer()
         self.class_names = classes
         self.n_classes = len(classes)
@@ -60,7 +61,7 @@ class BaseTrainer(ABC):
         self.writer.add_figure(f'{cm_name}', fig, global_step=epoch)
         plt.clf()
 
-    def save(self, epoch, model, optimizer, loss, f1):
+    def save(self, epoch, model, optimizer, loss, f1, fold):
         print(f'Saving model...')
         torch.save({
             'epoch': epoch,
@@ -68,7 +69,7 @@ class BaseTrainer(ABC):
             'optimizer_state_dict': optimizer,
             'loss': loss,
             'f1': f1,
-        }, os.path.join(self.log_dir, "best_model.pth"))
+        }, os.path.join(self.output_dir, f"fold_{fold}_val_f1_{f1:.4f}_model.pth"))
 
     def train_loop(self, model, optimizer, train_loader):
         model.train()
@@ -145,17 +146,17 @@ class BaseTrainer(ABC):
     def train(self, *args, **kwargs):
         pass
 
-    def log_conf_matrix(self, true, preds, mode, epoch):
-        conf_mat = confusion_matrix(true, preds, labels=list(range(self.n_classes)))
-        df_cm = pd.DataFrame(conf_mat, index=[label for label in self.class_names],
-                             columns=[label for label in self.class_names])
-
-        fig = plt.figure(figsize=(10, 7))
-        sn.heatmap(df_cm / np.sum(df_cm), annot=True, fmt='.2%', cmap='Blues')
-        self.writer.add_figure(f'normalized_{mode}_confusion_matrix', fig, global_step=epoch)
-        plt.clf()
-
-        fig = plt.figure(figsize=(10, 7))
-        sn.heatmap(df_cm, annot=True, cmap='Blues')
-        self.writer.add_figure(f'{mode}_relative_confusion_matrix', fig, global_step=epoch)
-        plt.clf()
+    # def log_conf_matrix(self, true, preds, mode, epoch):
+    #     conf_mat = confusion_matrix(true, preds, labels=list(range(self.n_classes)))
+    #     df_cm = pd.DataFrame(conf_mat, index=[label for label in self.class_names],
+    #                          columns=[label for label in self.class_names])
+    #
+    #     fig = plt.figure(figsize=(10, 7))
+    #     sn.heatmap(df_cm / np.sum(df_cm), annot=True, fmt='.2%', cmap='Blues')
+    #     self.writer.add_figure(f'normalized_{mode}_confusion_matrix', fig, global_step=epoch)
+    #     plt.clf()
+    #
+    #     fig = plt.figure(figsize=(10, 7))
+    #     sn.heatmap(df_cm, annot=True, cmap='Blues')
+    #     self.writer.add_figure(f'{mode}_relative_confusion_matrix', fig, global_step=epoch)
+    #     plt.clf()

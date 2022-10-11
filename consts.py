@@ -73,7 +73,7 @@ FASTTEXT_MODEL_PATH = os.path.join(WORD2VEC_DIR, "word2vec-google-news-300.kv")
 
 GENSIM_MODEL_NAME_TO_PATH = {
     "glove-wiki-gigaword-300": GLOVE_DIR,
-    "fasttext-wiki-news-sbwords-300": FASTTEXT_DIR,
+    "fasttext-wiki-news-subwords-300": FASTTEXT_DIR,
     "word2vec-google-news-300": WORD2VEC_DIR
 }
 GENSIM_MODEL_PATHS = {
