@@ -1,7 +1,7 @@
 import os
 
-from tqdm import tqdm
 import gensim.downloader as api
+from tqdm import tqdm
 
 from consts import GENSIM_MODEL_NAME_TO_PATH
 

@@ -16,7 +16,8 @@ def insert_oov(gensim_model):
 
 def load_gensim_embeddings(model_name):
     if model_name not in GENSIM_MODEL_PATHS.keys():
-        raise TypeError(f'Chosen model: {model_name} is invalid! Please choose from `glove`, `fasttext` and `word2vec`.')
+        raise TypeError(
+            f'Chosen model: {model_name} is invalid! Please choose from `glove`, `fasttext` and `word2vec`.')
 
     model = KeyedVectors.load(GENSIM_MODEL_PATHS[model_name])
     model = insert_oov(model)

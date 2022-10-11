@@ -16,7 +16,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_names", type=str, help="Names of the classification models delimited by coma (,)")
-    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by ,", default="clean_text")
+    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by ,",
+                        default="clean_text")
     parser.add_argument("--dataset_names", type=str, help="Names of the text columns delimited by ,")
     parser.add_argument("--embedding_names", type=str, help="Names of the embeddings delimited by ,")
 
@@ -49,7 +50,8 @@ if __name__ == '__main__':
         print(f'Current grid: {grid}')
         model_name, column_name, dataset_name, embedding_name = grid
         if not results.empty:
-            if [model_name, embedding_name, column_name, dataset_name] in results[['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
+            if [model_name, embedding_name, column_name, dataset_name] in results[
+                ['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
                 print(f'Continuing, parameters already trained!')
                 continue
 

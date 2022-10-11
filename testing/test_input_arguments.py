@@ -3,7 +3,7 @@ from consts import DATASET_PATHS, ALLOWED_MODEL_NAMES, ALLOWED_TEXT_COLUMNS, GEN
 
 
 def test_model_names(model_names):
-    assert type(model_names) == list,  "Model names type should be list"
+    assert type(model_names) == list, "Model names type should be list"
     assert None not in model_names, f"No None values are allowed in {model_names}"
     assert len(model_names) > 0, "Length of model names needs to be greater than 0"
     for model_name in model_names:
@@ -31,7 +31,8 @@ def test_dataset_names(dataset_names):
     assert None not in dataset_names, f"No None values are allowed in {dataset_names}"
     assert len(dataset_names) > 0, "Length of dataset names needs to be greater than 0"
     for dataset_name in dataset_names:
-        assert dataset_name in list(DATASET_PATHS.keys()), f"Dataset name: {dataset_name} should be in {list(DATASET_PATHS.keys())}"
+        assert dataset_name in list(
+            DATASET_PATHS.keys()), f"Dataset name: {dataset_name} should be in {list(DATASET_PATHS.keys())}"
 
 
 def test_embedding_names(embedding_names):
@@ -39,4 +40,5 @@ def test_embedding_names(embedding_names):
     assert None not in embedding_names, f"No None values are allowed in {embedding_names}"
     assert len(embedding_names) > 0, "Length of embedding names needs to be greater than 0"
     for embedding_name in embedding_names:
-        assert embedding_name in list(GENSIM_MODEL_PATHS.keys()), f"Embedding name: {embedding_name} should be in {list(GENSIM_MODEL_PATHS.keys())}"
+        assert embedding_name in list(
+            GENSIM_MODEL_PATHS.keys()), f"Embedding name: {embedding_name} should be in {list(GENSIM_MODEL_PATHS.keys())}"

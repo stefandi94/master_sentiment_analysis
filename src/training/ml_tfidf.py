@@ -5,19 +5,20 @@ from pprint import pprint
 import pandas as pd
 from tqdm import tqdm
 
-from testing.test_input_arguments import test_column_names, test_model_names, test_dataset_names
 from consts import DATASET_LABEL_TO_INDEX, RESULTS_DIR
-from src.utils.fit_gridsearch import fit_grid, parse_grid_search_results
-from src.preprocess.data_loading import get_data
-from src.grid_parameters.tf_idf import get_model_grid
 from consts import DATASET_PATHS
+from src.grid_parameters.tf_idf import get_model_grid
+from src.preprocess.data_loading import get_data
+from src.utils.fit_gridsearch import fit_grid, parse_grid_search_results
+from testing.test_input_arguments import test_column_names, test_model_names, test_dataset_names
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_names", type=str, help="Names of the classification models delimited by ,")
-    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by ,", default="clean_text")
+    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by ,",
+                        default="clean_text")
     parser.add_argument("--dataset_names", type=str, help="Names of the text columns delimited by ,")
 
     arguments = parser.parse_args()
@@ -44,10 +45,11 @@ if __name__ == '__main__':
 
     for grid in tqdm(grids, desc="Grid loop"):
         pprint(f'Current grid: {grid}')
-        
+
         model_name, column_name, dataset_name = grid
         if not results.empty:
-            if [model_name, embedding_name, column_name, dataset_name] in results[['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
+            if [model_name, embedding_name, column_name, dataset_name] in results[
+                ['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
                 print(f'Continuing, parameters already trained!')
                 continue
 
@@ -65,3 +67,5 @@ if __name__ == '__main__':
         results = pd.concat([results, pd.DataFrame(parsed_results, index=[results.shape[1]])])
 
         results.to_csv(output_results_path, index=False)
+
+    # os.system("shutdown /s /t 1")

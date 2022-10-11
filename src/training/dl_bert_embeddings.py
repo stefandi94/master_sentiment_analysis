@@ -1,31 +1,38 @@
-import ast
 import itertools
 import os
 
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import KFold
 from tqdm import tqdm
-from transformers import BertTokenizer
+from transformers import AutoModel, AutoTokenizer
 
-from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, CLASSIFICATION_MODELS_DIR
+from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, RESULTS_DIR, LOG_DIR
 from src.dl.trainers.bert_embedding_trainer import BertEmbeddingTrainer
 from src.preprocess.data_loading import get_data
-from src.utils.utils import save_json
+from src.utils.fit_gridsearch import parse_results
+from src.utils.utils import get_time
 from testing.test_input_arguments import test_dataset_names, test_column_names
 
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by coma (,)")
+    parser.add_argument("--column_names", type=str, help="Names of the text columns delimited by coma ,",
+                        default="clean_text")
     parser.add_argument("--dataset_names", type=str, help="Names of the text columns delimited by coma (,)")
     parser.add_argument("--device", type=str, help="cpu or cuda", default="cuda")
     parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--log_interval", type=int, default=20)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--hidden_dim", type=int, default=200)
-    parser.add_argument("--k_fold", type=int, default=10)
+    parser.add_argument("--k_fold", type=int, default=2)
+    parser.add_argument("--transformer_name", type=str, default="roberta-base")
+    parser.add_argument("--tokenizer_name", type=str, default='roberta-base')
+    parser.add_argument("--dropout", type=float, default=0.5)
+    parser.add_argument("--bidirectional", type=bool, default=False)
+    parser.add_argument("--optimizer", type=str, default="rmsprop")
 
     arguments = parser.parse_args()
 
@@ -38,6 +45,11 @@ if __name__ == '__main__':
     hidden_dim = arguments.hidden_dim
     k_fold = arguments.k_fold
     log_interval = arguments.log_interval
+    transformer_name = arguments.transformer_name
+    tokenizer_name = arguments.tokenizer_name
+    dropout = arguments.dropout
+    bidirectional = arguments.bidirectional
+    optimizer = arguments.optimizer
 
     test_column_names(TEXT_COLUMNS)
     test_dataset_names(DATASET_NAMES)
@@ -45,33 +57,44 @@ if __name__ == '__main__':
     DATASET_PATHS = dict((name, DATASET_PATHS[name]) for name in DATASET_NAMES)
     grids = list(itertools.product(TEXT_COLUMNS, DATASET_PATHS))
 
-    embedding_name = "bert_embeddings"
-    global labels
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    transformer_model = AutoModel.from_pretrained(transformer_name)
+    embedding_dim = transformer_model.embeddings.word_embeddings.weight.shape[-1]
+    embedding_name = transformer_name
+    model_name = "transformer_embeddings"
+
+    output_results_path = os.path.join(RESULTS_DIR, "results.csv")
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+
+    try:
+        results = pd.read_csv(output_results_path)
+    except FileNotFoundError:
+        results = pd.DataFrame()
+
     for grid in tqdm(grids, desc="Grid loop"):
+        print(f'Current grid: {grid}')
         column_name, dataset_name = grid
+        time = get_time()
+
+        base_log_dir = os.path.join(LOG_DIR, dataset_name, column_name, model_name, time)
+
         label_mapping = DATASET_LABEL_TO_INDEX[dataset_name]
-
-        output_dir = os.path.join(CLASSIFICATION_MODELS_DIR, dataset_name, embedding_name, column_name)
-        os.makedirs(output_dir, exist_ok=True)
-        output_model_path = os.path.join(output_dir, "best_estimator.pickle")
-        output_grid_search_results_path = os.path.join(output_dir, "grid_search.json")
-
-        if os.path.exists(output_model_path) and os.path.exists(output_grid_search_results_path):
-            print(f'Grid search results and model already trained. Continuing!')
-            continue
-
         X, y = get_data(DATASET_PATHS[dataset_name], column_name, label_mapping)
 
         X = X.reset_index(drop=True)
         splits = KFold(n_splits=k_fold, shuffle=True, random_state=42)
         labels = list(label_mapping.values())
 
-        model_kwargs = {"hidden_dim": hidden_dim, "output_dim": len(labels)}
-
         best_states = []
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
         for fold, (train_idx, val_idx) in enumerate(tqdm(splits.split(np.arange(len(X))), desc="KFold loop")):
+            model_kwargs = {
+                "transformer_model": transformer_model, "hidden_dim": hidden_dim, "output_dim": len(labels),
+                "bidirectional": bidirectional, "dropout": dropout
+            }
+            print(f'Fold number: {fold}')
+            log_dir = os.path.join(base_log_dir, str(fold))
+
             X_train, X_valid = X[train_idx], X[val_idx]
             y_train, y_valid = y[train_idx], y[val_idx]
 
@@ -79,7 +102,7 @@ if __name__ == '__main__':
             X_valid = list(X_valid.values)
 
             trainer = BertEmbeddingTrainer(
-                "bert_embeddings", lr, epochs, batch_size, device, output_dir, output_dir, labels, **model_kwargs
+                model_name, lr, epochs, batch_size, device, labels, log_dir, optimizer, **model_kwargs
             )
             best_state = trainer.train(X_train, y_train, X_valid, y_valid, tokenizer)
             best_states.append(best_state)
@@ -90,7 +113,13 @@ if __name__ == '__main__':
                 continue
             d[k] = np.mean([d[k] for d in best_states])
 
-        d['lr'] = lr
-        d.update(**model_kwargs)
+        del model_kwargs['transformer_model']
+        model_kwargs['embedding_dim'] = embedding_dim
+        model_kwargs['transformer_name'] = transformer_name
+        model_kwargs['tokenizer_name'] = tokenizer_name
+        model_kwargs['optimizer_name'] = optimizer
 
-        save_json(d, output_grid_search_results_path)
+        parsed_results = parse_results(d, model_name, column_name, dataset_name, embedding_name, model_kwargs, lr,
+                                       epochs, batch_size)
+        results = pd.concat([results, pd.DataFrame(parsed_results, index=[results.shape[1]])])
+        results.to_csv(output_results_path, index=False)

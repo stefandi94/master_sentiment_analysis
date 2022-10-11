@@ -1,14 +1,14 @@
 import re
 
-from nltk.tokenize import word_tokenize
-from nltk.stem.porter import PorterStemmer
-from nltk.stem import WordNetLemmatizer
-from tqdm import tqdm
 import preprocessor as p
+from nltk.stem import WordNetLemmatizer
+from nltk.stem.porter import PorterStemmer
+from nltk.tokenize import word_tokenize
+from tqdm import tqdm
 
-from src.utils import create_dir_path
-from src.preprocess import load_raw_imdb, load_raw_corona_data, load_yelp_data
 from consts import *
+from src.preprocess import load_raw_imdb, load_raw_corona_data, load_yelp_data
+from src.utils import create_dir_path
 
 porter_stemmer = PorterStemmer()
 wordnet_lemmatizer = WordNetLemmatizer()
@@ -82,7 +82,8 @@ def one_iter_preprocess(df, twitter):
 
 
 def data_preprocess(df, twitter):
-    clean_text_df, tokenized_clean_text_df, stem_clean_text_df, tokenized_stem_clean_text_df, lemm_clean_text_df, tokenized_lemm_clean_text_df = one_iter_preprocess(df, twitter=twitter)
+    clean_text_df, tokenized_clean_text_df, stem_clean_text_df, tokenized_stem_clean_text_df, lemm_clean_text_df, tokenized_lemm_clean_text_df = one_iter_preprocess(
+        df, twitter=twitter)
     df['clean_text'] = clean_text_df
     df['tokenized_clean_text'] = tokenized_clean_text_df
     df['tokenized_stem_clean_text'] = tokenized_stem_clean_text_df
@@ -115,8 +116,10 @@ def transform_yelp():
 
 
 def transform_corona():
-    transform_and_save(load_raw_corona_data, CORONA_TWEETS_DATASET_RAW_TRAIN, CORONA_TWEETS_DATASET_PROCESSED_TRAIN, twitter=True)
-    transform_and_save(load_raw_corona_data, CORONA_TWEETS_DATASET_RAW_TEST, CORONA_TWEETS_DATASET_PROCESSED_TEST, twitter=True)
+    transform_and_save(load_raw_corona_data, CORONA_TWEETS_DATASET_RAW_TRAIN, CORONA_TWEETS_DATASET_PROCESSED_TRAIN,
+                       twitter=True)
+    transform_and_save(load_raw_corona_data, CORONA_TWEETS_DATASET_RAW_TEST, CORONA_TWEETS_DATASET_PROCESSED_TEST,
+                       twitter=True)
 
 
 def transform_all():
@@ -133,4 +136,3 @@ def transform_all():
 if __name__ == '__main__':
     preprocess = Preprocess()
     transform_all()
-

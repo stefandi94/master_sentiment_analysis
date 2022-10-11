@@ -23,7 +23,8 @@ def get_model_grid(model_name: str):
         parameters = {"svc_clf__C": [1, 10, 100], "svc_clf__kernel": ["poly", "rbf"]}
     elif model_name == "rf":
         text_clf = Pipeline([vectorizer, ('rf_clf', RandomForestClassifier())])
-        parameters = {"rf_clf__n_estimators": [50, 100], "rf_clf__criterion": ["gini", "entropy"], 'rf_clf__max_depth': [4, 6, 8]}
+        parameters = {"rf_clf__n_estimators": [50, 100], "rf_clf__criterion": ["gini", "entropy"],
+                      'rf_clf__max_depth': [4, 6, 8]}
     elif model_name == "mlp":
         text_clf = Pipeline([vectorizer, ('mlp_clf', MLPClassifier())])
         parameters = {

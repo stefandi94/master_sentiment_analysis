@@ -2,9 +2,12 @@ import abc
 import os
 from abc import ABC
 
+import numpy as np
+import pandas as pd
 import seaborn as sn
 import torch
 from matplotlib import pyplot as plt
+from sklearn.metrics import confusion_matrix
 from torch import optim, nn
 from torch.utils.tensorboard import SummaryWriter
 
@@ -13,14 +16,14 @@ from src.dl.utils import get_model
 
 class BaseTrainer(ABC):
 
-    def __init__(self, model_name, lr, epochs, batch_size, device, classes, log_dir, **model_kwargs):
+    def __init__(self, model_name, lr, epochs, batch_size, device, classes, log_dir, optimizer_name, **model_kwargs):
         self.vocab = None
         self.model_name = model_name
         self.model = get_model(model_name, **model_kwargs).to(device)
         self.model_kwargs = model_kwargs
         self.batch_size = batch_size
         self.lr = lr
-        self.optimizer = self.init_optimizer()
+        self.optimizer = self.init_optimizer(optimizer_name)
         self.scheduler = self.init_scheduler()
         self.loss = self.init_loss()
         self.device = device
@@ -43,7 +46,7 @@ class BaseTrainer(ABC):
         for model_param_key, model_param_value in self.model_kwargs:
             self.writer.add_text(model_param_key, model_param_value)
 
-    def init_optimizer(self):
+    def init_optimizer(self, optimizer_name):
         return optim.RMSprop(self.model.parameters(), lr=self.lr)
 
     def init_tensorboard_writer(self):
@@ -76,6 +79,8 @@ class BaseTrainer(ABC):
         true, predictions = [], []
         train_loss, correct = 0, 0
 
+        log_interval = num_batches // 4
+
         for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
             x = x_batch.type(torch.LongTensor).to(self.device)
             y = y_batch.type(torch.LongTensor).to(self.device)
@@ -97,13 +102,14 @@ class BaseTrainer(ABC):
             true.extend(y_true)
             predictions.extend(pred.cpu().numpy())
 
-            if batch_idx % 100 == 0:
+            if batch_idx > 0 and batch_idx % log_interval == 0:
                 loss, current = loss.item(), batch_idx * len(x_batch)
                 print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
         train_loss /= num_batches
         correct /= size
         print(f"Train Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
+        return true, predictions, train_loss
 
     def eval_loop(self, model, eval_loader):
         size = len(eval_loader.dataset)
@@ -138,3 +144,18 @@ class BaseTrainer(ABC):
     @abc.abstractmethod
     def train(self, *args, **kwargs):
         pass
+
+    def log_conf_matrix(self, true, preds, mode, epoch):
+        conf_mat = confusion_matrix(true, preds, labels=list(range(self.n_classes)))
+        df_cm = pd.DataFrame(conf_mat, index=[label for label in self.class_names],
+                             columns=[label for label in self.class_names])
+
+        fig = plt.figure(figsize=(10, 7))
+        sn.heatmap(df_cm / np.sum(df_cm), annot=True, fmt='.2%', cmap='Blues')
+        self.writer.add_figure(f'normalized_{mode}_confusion_matrix', fig, global_step=epoch)
+        plt.clf()
+
+        fig = plt.figure(figsize=(10, 7))
+        sn.heatmap(df_cm, annot=True, cmap='Blues')
+        self.writer.add_figure(f'{mode}_relative_confusion_matrix', fig, global_step=epoch)
+        plt.clf()

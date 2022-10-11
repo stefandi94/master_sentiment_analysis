@@ -35,4 +35,3 @@ def load_pickle(path):
     with open(path, "rb") as fp:
         data = pickle.load(fp)
     return data
-

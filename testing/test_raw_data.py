@@ -2,9 +2,9 @@ import unittest
 
 import pandas as pd
 
-from src.preprocess import load_raw_imdb, load_yelp_data, load_raw_corona_data
 from consts import IMDB_LABELS, YELP_REVIEW_LABELS, IMDB_MOVIE_REVIEWS_RAW_TRAIN, YELP_REVIEW_RAW_TRAIN, \
     CORONA_TWEETS_DATASET_RAW_TRAIN, CORONA_LABELS
+from src.preprocess import load_raw_imdb, load_yelp_data, load_raw_corona_data
 
 COLUMNS = ['text', 'sentiment']
 

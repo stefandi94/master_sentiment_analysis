@@ -1,10 +1,12 @@
 import torch
-from sklearn.metrics import confusion_matrix, recall_score, accuracy_score, precision_score, f1_score
+from sklearn.metrics import recall_score, accuracy_score, precision_score, f1_score
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
+from torch import optim
 
 from src.dl.datasets import BertEmbeddingDataset, PretrainedWordEmbeddingsDataset, CustomWordEmbeddingsDataset
-from src.dl.models import SentimentCustomWordEmbeddingModel, SentimentPretrainedWordEmbeddingModel, SentimentBertEmbeddingModel
+from src.dl.models import SentimentCustomWordEmbeddingModel, SentimentPretrainedWordEmbeddingModel, \
+    SentimentBertEmbeddingModel
 
 
 def collate_batch(batch):
@@ -20,22 +22,43 @@ def collate_batch(batch):
     return text_list, label_list,
 
 
-def calc_metrics(y_true, y_pred, labels):
-    cm = confusion_matrix(y_true, y_pred, labels=labels, normalize=None)
-    norm_cm = confusion_matrix(y_true, y_pred, labels=labels, normalize='all')
+def calc_metrics(y_true, y_pred):
     recall = recall_score(y_true, y_pred, average="micro")
     acc = accuracy_score(y_true, y_pred)
     precision = precision_score(y_true, y_pred, average="micro")
     f1 = f1_score(y_true, y_pred, average="micro")
-    return {"f1": f1, "precision": precision, "recall": recall, "accuracy": acc}
+    return {"f1_micro": f1, "precision_micro": precision, "recall_micro": recall, "accuracy": acc}
+
+
+def get_optimizer(optimizer_name):
+    optimizer_name = optimizer_name.lower()
+    if optimizer_name == "adam":
+        optimizer = optim.Adam
+    elif optimizer_name == "radam":
+        optimizer = optim.RAdam
+    elif optimizer_name == "sgd":
+        optimizer = optim.SGD
+    elif optimizer_name == "rmsporp":
+        optimizer = optim.RMSprop
+    elif optimizer_name == "lbfgs":
+        optimizer = optim.LBFGS
+    elif optimizer_name == "rprop":
+        optimizer = optim.Rprop
+    elif optimizer_name == "lbfgs":
+        optimizer = optim.ASGD
+    else:
+        raise Exception(f'Optimizer name: {optimizer_name} not found! Choose from `adam`, `radam`, `sgd`, `rmsprop`, `lbfgs`, `rpor` or `lbfgs`!')
+
+    return optimizer
 
 
 def get_model(model_name, **kwargs):
+    model_name = model_name.lower()
     if model_name == "custom_embeddings":
         model = SentimentCustomWordEmbeddingModel(**kwargs)
-    elif model_name == "word_embeddings":
+    elif model_name == "pretrained_word_embeddings":
         model = SentimentPretrainedWordEmbeddingModel(**kwargs)
-    elif model_name == "bert_embeddings":
+    elif model_name == "transformer_embeddings":
         model = SentimentBertEmbeddingModel(**kwargs)
     else:
         raise Exception(f'Model: {model_name} not available! '
