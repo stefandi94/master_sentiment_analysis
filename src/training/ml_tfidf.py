@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import cross_val_predict
 from tqdm import tqdm
 
-from consts import DATASET_LABEL_TO_INDEX, RESULTS_DIR, CLASSIFICATION_MODELS_DIR
+from consts import DATASET_LABEL_TO_INDEX, RESULTS_DIR, CLASSIFICATION_MODELS_DIR, CV
 from consts import DATASET_PATHS
 from src.grid_parameters.tf_idf import get_model_grid
 from src.preprocess.data_loading import get_data
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
         grid_search = fit_grid(X, y, parameter_grid['pipe'], parameter_grid['parameters'])
 
-        y_pred = cross_val_predict(grid_search.best_estimator_, X, y, cv=10)
+        y_pred = cross_val_predict(grid_search.best_estimator_, X, y, cv=CV)
 
         conf_matrix = confusion_matrix(y, y_pred, labels=range(len(label_mapping)))
         plot_conf_matrix(conf_matrix, output_dir, list(label_mapping.keys()))

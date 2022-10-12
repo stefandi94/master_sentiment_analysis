@@ -1,11 +1,11 @@
 from src.dl.trainers import BaseTrainer
-from src.dl.utils import calc_metrics, get_bert_embedding_data_loader
+from src.dl.utils import calc_metrics, get_transformers_embedding_data_loader
 
 
-class BertEmbeddingTrainer(BaseTrainer):
+class TransformersEmbeddingTrainer(BaseTrainer):
     def train(self, X_train, y_train, X_valid, y_valid, tokenizer, fold):
-        train_loader = get_bert_embedding_data_loader(X_train, y_train, tokenizer, self.batch_size)
-        valid_loader = get_bert_embedding_data_loader(X_valid, y_valid, tokenizer, self.batch_size)
+        train_loader = get_transformers_embedding_data_loader(X_train, y_train, tokenizer, self.batch_size)
+        valid_loader = get_transformers_embedding_data_loader(X_valid, y_valid, tokenizer, self.batch_size)
 
         best_val_f1, best_loss, best_epoch = 0, 0, 0
         best_model, best_optimizer = None, None
@@ -38,9 +38,9 @@ class BertEmbeddingTrainer(BaseTrainer):
             for metric in train_metrics:
                 self.writer.add_scalar(f"Train metric {metric}", train_metrics[metric], epoch)
 
-            if valid_metrics['f1_micro'] > best_val_f1:
+            if valid_metrics['f1_macro'] > best_val_f1:
                 best_epoch = epoch
-                best_val_f1 = valid_metrics['f1_micro']
+                best_val_f1 = valid_metrics['f1_macro']
                 best_metrics = valid_metrics
                 best_model = self.model
                 best_optimizer = self.optimizer

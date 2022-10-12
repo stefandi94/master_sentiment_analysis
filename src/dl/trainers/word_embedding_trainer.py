@@ -40,9 +40,9 @@ class PretrainedWordEmbeddingTrainer(BaseTrainer):
             for metric in train_metrics:
                 self.writer.add_scalar(f"Train metric {metric}", train_metrics[metric], epoch)
 
-            if valid_metrics['f1_micro'] > best_val_f1:
+            if valid_metrics['f1_macro'] > best_val_f1:
                 best_epoch = epoch
-                best_val_f1 = valid_metrics['f1_micro']
+                best_val_f1 = valid_metrics['f1_macro']
                 best_metrics = valid_metrics
                 best_model = self.model
                 best_optimizer = self.optimizer

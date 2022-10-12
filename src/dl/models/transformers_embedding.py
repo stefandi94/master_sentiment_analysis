@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-class SentimentBertEmbeddingModel(nn.Module):
+class SentimentTransformerEmbeddingModel(nn.Module):
     def __init__(self, transformer_model, hidden_dim, output_dim, bidirectional, dropout):
         super().__init__()
 

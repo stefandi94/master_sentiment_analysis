@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 
 
-class BertEmbeddingDataset(Dataset):
+class TransformerEmbeddingDataset(Dataset):
     def __init__(self, X, labels):
         self.X = X
         self.labels = labels

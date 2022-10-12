@@ -2,12 +2,9 @@ import abc
 import os
 from abc import ABC
 
-import numpy as np
-import pandas as pd
 import seaborn as sn
 import torch
 from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
 from torch import optim, nn
 from torch.utils.tensorboard import SummaryWriter
 

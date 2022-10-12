@@ -1,3 +1,3 @@
-from .bert_embedding import SentimentBertEmbeddingModel
+from .transformers_embedding import SentimentTransformerEmbeddingModel
 from .custom_word_embedding import SentimentCustomWordEmbeddingModel
 from .pretrained_word_embedding import SentimentPretrainedWordEmbeddingModel

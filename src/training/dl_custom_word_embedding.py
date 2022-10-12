@@ -8,7 +8,7 @@ from sklearn.model_selection import KFold
 from tqdm import tqdm
 
 from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, MAX_VOCAB_SIZE, RESULTS_DIR, LOG_DIR, \
-    CLASSIFICATION_MODELS_DIR
+    CLASSIFICATION_MODELS_DIR, CV
 from src.dl.trainers.custom_embedding_trainer import CustomWordEmbeddingTrainer
 from src.preprocess.data_loading import get_data
 from src.utils.fit_gridsearch import parse_results
@@ -29,9 +29,9 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, default=40)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--embedding_dim", type=int, default=300)
-    parser.add_argument("--hidden_dim", type=int, default=256)
+    parser.add_argument("--hidden_dim", type=int, default=128)
     parser.add_argument("--dropout", type=float, default=0.5)
-    parser.add_argument("--k_fold", type=int, default=10)
+    parser.add_argument("--k_fold", type=int, default=CV)
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
 

@@ -8,8 +8,8 @@ from sklearn.model_selection import KFold
 from tqdm import tqdm
 from transformers import AutoModel, AutoTokenizer
 
-from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, RESULTS_DIR, LOG_DIR, CLASSIFICATION_MODELS_DIR
-from src.dl.trainers.bert_embedding_trainer import BertEmbeddingTrainer
+from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, RESULTS_DIR, LOG_DIR, CLASSIFICATION_MODELS_DIR, CV
+from src.dl.trainers.transformers_embedding_trainer import TransformersEmbeddingTrainer
 from src.preprocess.data_loading import get_data
 from src.utils.fit_gridsearch import parse_results
 from src.utils.utils import get_time
@@ -24,12 +24,11 @@ if __name__ == '__main__':
                         default="clean_text")
     parser.add_argument("--dataset_names", type=str, help="Names of the text columns delimited by coma (,)")
     parser.add_argument("--device", type=str, help="cpu or cuda", default="cuda")
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--epochs", type=int, default=2)
-    parser.add_argument("--log_interval", type=int, default=20)
+    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--lr", type=float, default=0.001)
-    parser.add_argument("--hidden_dim", type=int, default=200)
-    parser.add_argument("--k_fold", type=int, default=2)
+    parser.add_argument("--hidden_dim", type=int, default=128)
+    parser.add_argument("--k_fold", type=int, default=CV)
     parser.add_argument("--transformer_name", type=str, default="roberta-base")
     parser.add_argument("--tokenizer_name", type=str, default='roberta-base')
     parser.add_argument("--dropout", type=float, default=0.5)
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     lr = arguments.lr
     hidden_dim = arguments.hidden_dim
     k_fold = arguments.k_fold
-    log_interval = arguments.log_interval
     transformer_name = arguments.transformer_name
     tokenizer_name = arguments.tokenizer_name
     dropout = arguments.dropout
@@ -99,6 +97,7 @@ if __name__ == '__main__':
             print(f'Fold number: {fold}')
             log_dir = os.path.join(base_log_dir, str(fold))
             output_dir = os.path.join(base_output_dir, str(fold))
+            os.makedirs(output_dir, exist_ok=True)
 
             X_train, X_valid = X[train_idx], X[val_idx]
             y_train, y_valid = y[train_idx], y[val_idx]
@@ -106,13 +105,13 @@ if __name__ == '__main__':
             X_train = list(X_train.values)
             X_valid = list(X_valid.values)
 
-            trainer = BertEmbeddingTrainer(
+            trainer = TransformersEmbeddingTrainer(
                 model_name, lr, epochs, batch_size, device, labels, optimizer, output_dir, log_dir, **model_kwargs
             )
             best_state, true, predictions = trainer.train(X_train, y_train, X_valid, y_valid, tokenizer, fold)
 
-            true_labels.append(true)
-            prediction_labels.append(predictions)
+            true_labels.extend(true)
+            prediction_labels.extend(predictions)
             best_states.append(best_state)
 
         conf_matrix = confusion_matrix(true_labels, prediction_labels, labels=range(len(label_mapping)))

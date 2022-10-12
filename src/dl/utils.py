@@ -4,9 +4,9 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 from torch import optim
 
-from src.dl.datasets import BertEmbeddingDataset, PretrainedWordEmbeddingsDataset, CustomWordEmbeddingsDataset
+from src.dl.datasets import TransformerEmbeddingDataset, PretrainedWordEmbeddingsDataset, CustomWordEmbeddingsDataset
 from src.dl.models import SentimentCustomWordEmbeddingModel, SentimentPretrainedWordEmbeddingModel, \
-    SentimentBertEmbeddingModel
+    SentimentTransformerEmbeddingModel
 
 
 def collate_batch(batch):
@@ -23,11 +23,11 @@ def collate_batch(batch):
 
 
 def calc_metrics(y_true, y_pred):
-    recall = recall_score(y_true, y_pred, average="micro")
     acc = accuracy_score(y_true, y_pred)
-    precision = precision_score(y_true, y_pred, average="micro")
-    f1 = f1_score(y_true, y_pred, average="micro")
-    return {"f1_micro": f1, "precision_micro": precision, "recall_micro": recall, "accuracy": acc}
+    precision = precision_score(y_true, y_pred, average="macro")
+    recall = recall_score(y_true, y_pred, average="macro")
+    f1 = f1_score(y_true, y_pred, average="macro")
+    return {"f1_macro": round(f1, 6), "precision_macro": round(precision, 6), "recall_macro": round(recall, 6), "accuracy": round(acc, 6)}
 
 
 def get_optimizer(optimizer_name):
@@ -59,10 +59,10 @@ def get_model(model_name, **kwargs):
     elif model_name == "pretrained_word_embeddings":
         model = SentimentPretrainedWordEmbeddingModel(**kwargs)
     elif model_name == "transformer_embeddings":
-        model = SentimentBertEmbeddingModel(**kwargs)
+        model = SentimentTransformerEmbeddingModel(**kwargs)
     else:
         raise Exception(f'Model: {model_name} not available! '
-                        f'Please choose from: `custom_embeddings`, `word_embeddings` and `bert_embeddings')
+                        f'Please choose from: `custom_embeddings`, `word_embeddings` and `transformer_embeddings')
     return model
 
 
@@ -84,8 +84,8 @@ def get_pretrained_word_embedding_data_loader(X, y, word_embedding_model, batch_
     return data_loader
 
 
-def get_bert_embedding_data_loader(X, y, tokenizer, batch_size):
+def get_transformers_embedding_data_loader(X, y, tokenizer, batch_size):
     encodings = tokenizer(X, return_tensors="pt", truncation=True, padding=True)['input_ids']
-    dataset = BertEmbeddingDataset(encodings, y)
+    dataset = TransformerEmbeddingDataset(encodings, y)
     data_loader = DataLoader(batch_size=batch_size, dataset=dataset, num_workers=8)
     return data_loader

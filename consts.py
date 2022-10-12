@@ -149,3 +149,5 @@ ALLOWED_TEXT_COLUMNS = ["clean_text", "stem_clean_text", "lemm_clean_text"]
 ALLOWED_TOKENIZED_TEXT_COLUMNS = ["tokenized_clean_text", "tokenized_stem_clean_text", "tokenized_lemm_clean_text"]
 
 MAX_SEQ_LEN = 512
+
+CV = 10
