@@ -48,6 +48,7 @@ class CustomWordEmbeddingTrainer(BaseTrainer):
                 best_model = self.model
                 best_optimizer = self.optimizer
                 best_loss = valid_loss
+                best_valid_prediction = valid_predictions
 
         self.save(best_epoch, best_model, best_optimizer, best_loss, best_val_f1, fold)
-        return best_metrics, valid_true, valid_predictions
+        return best_metrics, valid_true, best_valid_prediction

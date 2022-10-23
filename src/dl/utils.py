@@ -1,8 +1,8 @@
 import torch
 from sklearn.metrics import recall_score, accuracy_score, precision_score, f1_score
+from torch import optim
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
-from torch import optim
 
 from src.dl.datasets import TransformerEmbeddingDataset, PretrainedWordEmbeddingsDataset, CustomWordEmbeddingsDataset
 from src.dl.models import SentimentCustomWordEmbeddingModel, SentimentPretrainedWordEmbeddingModel, \
@@ -38,7 +38,7 @@ def get_optimizer(optimizer_name):
         optimizer = optim.RAdam
     elif optimizer_name == "sgd":
         optimizer = optim.SGD
-    elif optimizer_name == "rmsporp":
+    elif optimizer_name == "rmsprop":
         optimizer = optim.RMSprop
     elif optimizer_name == "lbfgs":
         optimizer = optim.LBFGS
@@ -89,3 +89,11 @@ def get_transformers_embedding_data_loader(X, y, tokenizer, batch_size):
     dataset = TransformerEmbeddingDataset(encodings, y)
     data_loader = DataLoader(batch_size=batch_size, dataset=dataset, num_workers=8)
     return data_loader
+
+
+# def get_transformer_embedding(transformer_model):
+#     return list(list(transformer_model.children())[0].children())[0].weight.data
+
+
+def get_transformer_embedding(transformer_model):
+    return transformer_model.embeddings.word_embeddings

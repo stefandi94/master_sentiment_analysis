@@ -10,6 +10,7 @@ from transformers import AutoModel, AutoTokenizer
 
 from consts import DATASET_PATHS, DATASET_LABEL_TO_INDEX, RESULTS_DIR, LOG_DIR, CLASSIFICATION_MODELS_DIR, CV
 from src.dl.trainers.transformers_embedding_trainer import TransformersEmbeddingTrainer
+from src.dl.utils import get_transformer_embedding
 from src.preprocess.data_loading import get_data
 from src.utils.fit_gridsearch import parse_results
 from src.utils.utils import get_time
@@ -29,8 +30,8 @@ if __name__ == '__main__':
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--hidden_dim", type=int, default=128)
     parser.add_argument("--k_fold", type=int, default=CV)
-    parser.add_argument("--transformer_name", type=str, default="roberta-base")
-    parser.add_argument("--tokenizer_name", type=str, default='roberta-base')
+    parser.add_argument("--transformer_name", type=str, default="bert-base-uncased")
+    parser.add_argument("--tokenizer_name", type=str, default='bert-base-uncased')
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
@@ -59,6 +60,7 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     transformer_model = AutoModel.from_pretrained(transformer_name)
+    embeddings = get_transformer_embedding(transformer_model)
     embedding_dim = transformer_model.embeddings.word_embeddings.weight.shape[-1]
     embedding_name = transformer_name
     model_name = "transformer_embeddings"
@@ -91,8 +93,8 @@ if __name__ == '__main__':
         prediction_labels = []
         for fold, (train_idx, val_idx) in enumerate(tqdm(splits.split(np.arange(len(X))), desc="KFold loop")):
             model_kwargs = {
-                "transformer_model": transformer_model, "hidden_dim": hidden_dim, "output_dim": len(labels),
-                "bidirectional": bidirectional, "dropout": dropout
+                "hidden_dim": hidden_dim, "output_dim": len(labels),
+                "bidirectional": bidirectional, "dropout": dropout, "embeddings": embeddings
             }
             print(f'Fold number: {fold}')
             log_dir = os.path.join(base_log_dir, str(fold))
@@ -126,7 +128,7 @@ if __name__ == '__main__':
                 continue
             d[k] = np.mean([d[k] for d in best_states])
 
-        del model_kwargs['transformer_model']
+        del model_kwargs['embeddings']
         model_kwargs['embedding_dim'] = embedding_dim
         model_kwargs['transformer_name'] = transformer_name
         model_kwargs['tokenizer_name'] = tokenizer_name

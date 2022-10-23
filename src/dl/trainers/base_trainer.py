@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from torch import optim, nn
 from torch.utils.tensorboard import SummaryWriter
 
-from src.dl.utils import get_model
+from src.dl.utils import get_model, get_optimizer
 
 
 class BaseTrainer(ABC):
@@ -37,7 +37,7 @@ class BaseTrainer(ABC):
         return nn.CrossEntropyLoss()
 
     def init_scheduler(self):
-        return optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.75)
+        return optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.8)
 
     def log_params(self):
         self.writer.add_text("Model name", self.model_name)
@@ -45,7 +45,8 @@ class BaseTrainer(ABC):
             self.writer.add_text(model_param_key, model_param_value)
 
     def init_optimizer(self, optimizer_name):
-        return optim.RMSprop(self.model.parameters(), lr=self.lr)
+        optimizer = get_optimizer(optimizer_name)
+        return optimizer(self.model.parameters(), lr=self.lr, weight_decay=1e-6)
 
     def init_tensorboard_writer(self):
         os.makedirs(self.log_dir, exist_ok=True)

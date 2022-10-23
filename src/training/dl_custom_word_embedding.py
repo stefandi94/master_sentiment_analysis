@@ -14,7 +14,6 @@ from src.preprocess.data_loading import get_data
 from src.utils.fit_gridsearch import parse_results
 from src.utils.utils import get_time
 from src.utils.visualization import plot_conf_matrix, plot_clf_report
-
 from testing.test_input_arguments import test_tokenized_column_names, test_dataset_names
 
 if __name__ == '__main__':
@@ -34,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("--k_fold", type=int, default=CV)
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
+    parser.add_argument("--vocab_size", type=int, default=MAX_VOCAB_SIZE)
 
     arguments = parser.parse_args()
 
@@ -49,6 +49,7 @@ if __name__ == '__main__':
     k_fold = arguments.k_fold
     bidirectional = arguments.bidirectional
     optimizer = arguments.optimizer
+    vocab_size = arguments.vocab_size
 
     test_tokenized_column_names(TEXT_COLUMNS)
     test_dataset_names(DATASET_NAMES)
@@ -93,7 +94,7 @@ if __name__ == '__main__':
             os.makedirs(output_dir, exist_ok=True)
 
             model_kwargs = {
-                "input_dim": MAX_VOCAB_SIZE + 2, "embedding_dim": embedding_dim, "hidden_dim": hidden_dim,
+                "input_dim": vocab_size + 2, "embedding_dim": embedding_dim, "hidden_dim": hidden_dim,
                 "dropout": dropout, "output_dim": len(labels), "bidirectional": bidirectional
             }
 

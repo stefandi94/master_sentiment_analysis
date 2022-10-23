@@ -63,13 +63,8 @@ EMBEDDINGS_MODELS_DIR = os.path.join(BASE_DIR, "embeddings")
 PRETRAINED_WORD_EMBEDDINGS_DIR = os.path.join(EMBEDDINGS_MODELS_DIR, "pretrained_word_embeddings")
 
 WORD2VEC_DIR = os.path.join(PRETRAINED_WORD_EMBEDDINGS_DIR, "word2vec")
-WORD2VEC_MODEL_PATH = os.path.join(WORD2VEC_DIR, "word2vec-google-news-300.kv")
-
 GLOVE_DIR = os.path.join(PRETRAINED_WORD_EMBEDDINGS_DIR, "glove")
-GLOVE_MODEL_PATH = os.path.join(WORD2VEC_DIR, "word2vec-google-news-300.kv")
-
 FASTTEXT_DIR = os.path.join(PRETRAINED_WORD_EMBEDDINGS_DIR, "fasttext")
-FASTTEXT_MODEL_PATH = os.path.join(WORD2VEC_DIR, "word2vec-google-news-300.kv")
 
 GENSIM_MODEL_NAME_TO_PATH = {
     "glove-wiki-gigaword-300": GLOVE_DIR,
@@ -83,7 +78,7 @@ GENSIM_MODEL_PATHS = {
 }
 
 ##########################  CUSTOM WORD EMBEDDINGS  ####################################################################
-MAX_VOCAB_SIZE = 30000
+MAX_VOCAB_SIZE = 60000
 
 CUSTOM_WORD_EMBEDDINGS_DIR = os.path.join(EMBEDDINGS_MODELS_DIR, "custom_word_embeddings")
 
