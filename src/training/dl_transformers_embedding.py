@@ -35,6 +35,9 @@ if __name__ == '__main__':
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
+    parser.add_argument("--last_feature", type=bool, default=True)
+    parser.add_argument("--avg_pool", type=bool, default=True)
+    parser.add_argument("--max_pool", type=bool, default=True)
 
     arguments = parser.parse_args()
 
@@ -51,6 +54,9 @@ if __name__ == '__main__':
     dropout = arguments.dropout
     bidirectional = arguments.bidirectional
     optimizer = arguments.optimizer
+    last_feature = arguments.last_feature
+    avg_pool = arguments.avg_pool
+    max_pool = arguments.max_pool
 
     test_column_names(TEXT_COLUMNS)
     test_dataset_names(DATASET_NAMES)
@@ -74,9 +80,9 @@ if __name__ == '__main__':
         results = pd.DataFrame()
 
     for grid in tqdm(grids, desc="Grid loop"):
-        print(f'Current grid: {grid}')
         column_name, dataset_name = grid
         time = get_time()
+        print(f'Current grid: {grid} at {time}')
 
         base_output_dir = os.path.join(CLASSIFICATION_MODELS_DIR, dataset_name, column_name, model_name, time)
         base_log_dir = os.path.join(LOG_DIR, dataset_name, column_name, model_name, time)
@@ -94,7 +100,8 @@ if __name__ == '__main__':
         for fold, (train_idx, val_idx) in enumerate(tqdm(splits.split(np.arange(len(X))), desc="KFold loop")):
             model_kwargs = {
                 "hidden_dim": hidden_dim, "output_dim": len(labels),
-                "bidirectional": bidirectional, "dropout": dropout, "embeddings": embeddings
+                "bidirectional": bidirectional, "dropout": dropout, "embeddings": embeddings,
+                "last_feature": last_feature, "avg_pool": avg_pool, "max_pool": max_pool
             }
             print(f'Fold number: {fold}')
             log_dir = os.path.join(base_log_dir, str(fold))
@@ -110,6 +117,14 @@ if __name__ == '__main__':
             trainer = TransformersEmbeddingTrainer(
                 model_name, lr, epochs, batch_size, device, labels, optimizer, output_dir, log_dir, **model_kwargs
             )
+            print(trainer.model)
+
+            trainable_parameters = sum(p.numel() for p in trainer.model.parameters())
+            print(f'Number of trainable parameters: {trainable_parameters}')
+
+            non_trainable_parameters = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
+            print(f'Number of non-trainable parameters: {non_trainable_parameters}')
+
             best_state, true, predictions = trainer.train(X_train, y_train, X_valid, y_valid, tokenizer, fold)
 
             true_labels.extend(true)
@@ -133,6 +148,8 @@ if __name__ == '__main__':
         model_kwargs['transformer_name'] = transformer_name
         model_kwargs['tokenizer_name'] = tokenizer_name
         model_kwargs['optimizer_name'] = optimizer
+        model_kwargs['trainable_parameters'] = trainable_parameters
+        model_kwargs['non_trainable'] = non_trainable_parameters
 
         parsed_results = parse_results(d, model_name, column_name, dataset_name, embedding_name, model_kwargs, lr,
                                        epochs, batch_size)

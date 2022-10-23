@@ -34,6 +34,9 @@ if __name__ == '__main__':
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
     parser.add_argument("--vocab_size", type=int, default=MAX_VOCAB_SIZE)
+    parser.add_argument("--last_feature", type=bool, default=True)
+    parser.add_argument("--avg_pool", type=bool, default=True)
+    parser.add_argument("--max_pool", type=bool, default=True)
 
     arguments = parser.parse_args()
 
@@ -50,6 +53,9 @@ if __name__ == '__main__':
     bidirectional = arguments.bidirectional
     optimizer = arguments.optimizer
     vocab_size = arguments.vocab_size
+    last_feature = arguments.last_feature
+    avg_pool = arguments.avg_pool
+    max_pool = arguments.max_pool
 
     test_tokenized_column_names(TEXT_COLUMNS)
     test_dataset_names(DATASET_NAMES)
@@ -95,7 +101,8 @@ if __name__ == '__main__':
 
             model_kwargs = {
                 "input_dim": vocab_size + 2, "embedding_dim": embedding_dim, "hidden_dim": hidden_dim,
-                "dropout": dropout, "output_dim": len(labels), "bidirectional": bidirectional
+                "dropout": dropout, "output_dim": len(labels), "bidirectional": bidirectional,
+                "last_feature": last_feature, "avg_pool": avg_pool, "max_pool": max_pool
             }
 
             X_train, X_valid = X[train_idx], X[val_idx]
@@ -104,6 +111,14 @@ if __name__ == '__main__':
             trainer = CustomWordEmbeddingTrainer(
                 model_name, lr, epochs, batch_size, device, labels, optimizer, output_dir, log_dir, **model_kwargs
             )
+            print(trainer.model)
+
+            trainable_parameters = sum(p.numel() for p in trainer.model.parameters())
+            print(f'Number of trainable parameters: {trainable_parameters}')
+
+            non_trainable_parameters = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
+            print(f'Number of not-trainable parameters: {non_trainable_parameters}')
+
             best_state, true, predictions = trainer.train(X_train, y_train, X_valid, y_valid, fold)
 
             true_labels.extend(true)
@@ -122,6 +137,8 @@ if __name__ == '__main__':
                 continue
             d[k] = np.mean([d[k] for d in best_states])
         model_kwargs['optimizer_name'] = optimizer
+        model_kwargs['trainable_parameters'] = trainable_parameters
+        model_kwargs['non_trainable'] = non_trainable_parameters
 
         parsed_results = parse_results(d, model_name, column_name, dataset_name, embedding_name, model_kwargs, lr,
                                        epochs, batch_size)
