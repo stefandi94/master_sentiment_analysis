@@ -32,6 +32,7 @@ if __name__ == '__main__':
     parser.add_argument("--k_fold", type=int, default=CV)
     parser.add_argument("--freeze", type=bool, default=False)
     parser.add_argument("--dropout", type=float, default=0.5)
+    parser.add_argument("--batch_norm", type=bool, default=False)
     parser.add_argument("--bidirectional", type=bool, default=False)
     parser.add_argument("--optimizer", type=str, default="rmsprop")
     parser.add_argument("--last_feature", type=bool, default=True)
@@ -51,6 +52,7 @@ if __name__ == '__main__':
     k_fold = arguments.k_fold
     bidirectional = arguments.bidirectional
     dropout = arguments.dropout
+    batch_norm = arguments.batch_norm
     freeze = arguments.freeze
     optimizer = arguments.optimizer
     last_feature = arguments.last_feature

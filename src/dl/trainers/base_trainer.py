@@ -46,7 +46,7 @@ class BaseTrainer(ABC):
 
     def init_optimizer(self, optimizer_name):
         optimizer = get_optimizer(optimizer_name)
-        return optimizer(self.model.parameters(), lr=self.lr, weight_decay=1e-6)
+        return optimizer(self.model.parameters(), lr=self.lr)
 
     def init_tensorboard_writer(self):
         os.makedirs(self.log_dir, exist_ok=True)

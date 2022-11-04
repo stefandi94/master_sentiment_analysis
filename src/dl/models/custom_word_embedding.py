@@ -3,7 +3,7 @@ from torch import nn
 
 
 class SentimentCustomWordEmbeddingModel(nn.Module):
-    def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim, dropout, bidirectional, last_feature=True, avg_pool=True, max_pool=True):
+    def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim, dropout, bidirectional, last_feature=True, avg_pool=True, max_pool=True, batch_norm=False):
         super().__init__()
 
         assert all([last_feature, avg_pool, max_pool]), "At least one LSTM output should be used!"
@@ -15,6 +15,7 @@ class SentimentCustomWordEmbeddingModel(nn.Module):
         self.embedding = nn.Embedding(input_dim, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=1, bidirectional=bidirectional)
         self.dropout = nn.Dropout(p=dropout)
+        # self.batch_norm = nn.BatchNorm1d()
         if bidirectional:
             hidden_dim *= 2
         self.fc = nn.Linear(c * hidden_dim, output_dim)

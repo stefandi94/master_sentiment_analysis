@@ -1,3 +1,5 @@
+from sklearn.metrics import confusion_matrix
+
 from src.dl.trainers import BaseTrainer
 from src.dl.utils import calc_metrics, get_transformers_embedding_data_loader
 
@@ -29,7 +31,7 @@ class TransformersEmbeddingTrainer(BaseTrainer):
             # self.log_conf_matrix(true, predictions, "valid", epoch=epoch)
             self.scheduler.step()
 
-            train_metrics = calc_metrics(valid_true, valid_predictions)
+            train_metrics = calc_metrics(true, predictions)
             valid_metrics = calc_metrics(valid_true, valid_predictions)
 
             for metric in valid_metrics:

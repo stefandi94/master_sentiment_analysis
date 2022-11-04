@@ -32,7 +32,7 @@ class CustomWordEmbeddingTrainer(BaseTrainer):
             self.writer.add_scalar(f"Valid loss:", valid_loss, epoch)
             self.scheduler.step()
 
-            train_metrics = calc_metrics(valid_true, valid_predictions)
+            train_metrics = calc_metrics(true, predictions)
             valid_metrics = calc_metrics(valid_true, valid_predictions)
 
             for metric in valid_metrics:
