@@ -23,4 +23,4 @@ def plot_conf_matrix(cm, output_dir, class_names):
 
 def plot_clf_report(clf_report, output_dir):
     sn.heatmap(pd.DataFrame(clf_report).iloc[:-1, :].T, annot=True)
-    plt.savefig(output_dir)
+    plt.savefig(os.path.join(output_dir, "clf_report.png"))

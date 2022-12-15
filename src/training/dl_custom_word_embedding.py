@@ -24,8 +24,8 @@ if __name__ == '__main__':
                         default="tokenized_clean_text")
     parser.add_argument("--dataset_names", type=str, help="Names of the text columns delimited by coma ,")
     parser.add_argument("--device", type=str, help="cpu or cuda", default="cuda")
-    parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--epochs", type=int, default=40)
+    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--embedding_dim", type=int, default=300)
     parser.add_argument("--hidden_dim", type=int, default=128)
@@ -116,7 +116,7 @@ if __name__ == '__main__':
             trainable_parameters = sum(p.numel() for p in trainer.model.parameters())
             print(f'Number of trainable parameters: {trainable_parameters}')
 
-            non_trainable_parameters = sum(p.numel() for p in trainer.model.parameters() if p.requires_grad)
+            non_trainable_parameters = sum(p.numel() for p in trainer.model.parameters() if not p.requires_grad)
             print(f'Number of not-trainable parameters: {non_trainable_parameters}')
 
             best_state, true, predictions = trainer.train(X_train, y_train, X_valid, y_valid, fold)

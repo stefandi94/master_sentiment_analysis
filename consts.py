@@ -78,7 +78,7 @@ GENSIM_MODEL_PATHS = {
 }
 
 ##########################  CUSTOM WORD EMBEDDINGS  ####################################################################
-MAX_VOCAB_SIZE = 60000
+MAX_VOCAB_SIZE = 29999
 
 CUSTOM_WORD_EMBEDDINGS_DIR = os.path.join(EMBEDDINGS_MODELS_DIR, "custom_word_embeddings")
 

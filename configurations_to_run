@@ -1,0 +1,2 @@
+python -m src.training.dl_pretrained_word_embedding --dataset_names yelp --embedding_name fasttext --lr 0.0006
+python -m src.training.dl_pretrained_word_embedding --dataset_names yelp --embedding_name fasttext --lr 0.0006

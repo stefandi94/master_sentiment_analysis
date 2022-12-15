@@ -50,10 +50,10 @@ if __name__ == '__main__':
         pprint(f'Current grid: {grid}')
 
         model_name, column_name, dataset_name = grid
-        if not results.empty:
-            if [model_name, embedding_name, column_name, dataset_name] in results[['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
-                print(f'Continuing, parameters already trained!')
-                continue
+        # if not results.empty:
+            # if [model_name, embedding_name, column_name, dataset_name] in results[['model_name', 'embedding_name', 'column_name', 'dataset_name']].values.tolist():
+            #     print(f'Continuing, parameters already trained!')
+            #     continue
 
         label_mapping = DATASET_LABEL_TO_INDEX[dataset_name]
         output_dir = os.path.join(CLASSIFICATION_MODELS_DIR, dataset_name, column_name, model_name)

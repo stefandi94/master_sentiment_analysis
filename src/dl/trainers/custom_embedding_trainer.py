@@ -20,7 +20,7 @@ class CustomWordEmbeddingTrainer(BaseTrainer):
         self.writer.add_text('Model', self.model_name)
         n_model_parameters = sum(p.numel() for p in self.model.parameters())
         self.writer.add_scalar('Model parameters', n_model_parameters)
-
+        print(self.model)
         for epoch in range(1, self.epochs + 1):
             print(f"Epoch: {epoch}")
             self.writer.add_scalar(f"Learning rate", self.scheduler._last_lr[0], epoch)
